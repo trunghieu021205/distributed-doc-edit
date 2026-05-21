@@ -24,6 +24,7 @@ services:
       OTHER_NODES: "S2,S3"  # danh sách node khác trong hệ thống (cần cho vector clock)
     volumes:
       - ./app:/app
+      - ./tests:/app/tests
 
 volumes:
   pgdata:
