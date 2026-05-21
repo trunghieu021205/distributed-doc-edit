@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: docedit
+      POSTGRES_PASSWORD: doceditpass
+      POSTGRES_DB: docedit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://docedit:doceditpass@db/docedit
+      NODE_ID: "S1"   # sẽ gán cho mỗi node khác nhau sau
+      OTHER_NODES: "S2,S3"  # danh sách node khác trong hệ thống (cần cho vector clock)
+    volumes:
+      - ./app:/app
+
+volumes:
+  pgdata:
