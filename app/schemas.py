@@ -1,39 +1,56 @@
 # app/schemas.py
-from datetime import datetime
+from pydantic import BaseModel, field_validator, model_validator
 from typing import Dict, Optional
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from datetime import datetime
+
 
 class VectorClockSchema(BaseModel):
-    clock: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Vector clock as dict of node_id -> counter (>=1)"
-    )
+    clock: Dict[str, int]
 
     @field_validator('clock')
     @classmethod
-    def counters_must_be_positive(cls, v: Dict[str, int]) -> Dict[str, int]:
-        for node, counter in v.items():
-            if not isinstance(node, str) or not node:
-                raise ValueError(f'Node ID must be non-empty string, got {node!r}')
-            if not isinstance(counter, int) or counter < 1:
-                raise ValueError(f'Counter for {node} must be int >= 1, got {counter}')
+    def validate_clock(cls, v: Dict[str, int]) -> Dict[str, int]:
+        for node_id, counter in v.items():
+            if not node_id or not node_id.strip():
+                raise ValueError("Node ID must be non-empty string")
+            if counter < 1:
+                raise ValueError(f"Counter for {node_id} must be int >= 1")
         return v
 
+
 class FragmentCreate(BaseModel):
-    doc_id: str = Field(..., min_length=1, description="Document identifier")
-    content: str = Field(..., min_length=1, description="Fragment content")
-    node_id: str = Field(..., min_length=1, description="ID of the node performing the update (e.g. S1)")
-    vector_clock: Optional[VectorClockSchema] = Field(
-        None,
-        description="Optional vector clock. If omitted, server initializes {node_id: 1}"
-    )
+    doc_id: str
+    content: str
+    node_id: str
+    vector_clock: Optional[VectorClockSchema] = None
+
+    @field_validator('content', 'node_id', 'doc_id')
+    @classmethod
+    def must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Field must not be empty")
+        return v
+
+
+class FragmentUpdate(BaseModel):
+    content: str
+    node_id: str
+    vector_clock: Dict[str, int]
+
+    @field_validator('content', 'node_id')
+    @classmethod
+    def must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Field must not be empty")
+        return v
+
 
 class FragmentResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
     doc_id: str
     content: str
     vector_clock: Dict[str, int]
     created_at: datetime
     updated_at: datetime
+
+    model_config = {"from_attributes": True}
