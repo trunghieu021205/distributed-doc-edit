@@ -1,4 +1,3 @@
-
 services:
   db:
     image: postgres:15-alpine
@@ -10,17 +9,23 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docedit"]
+      interval: 3s
+      timeout: 3s
+      retries: 8
 
   app:
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://docedit:doceditpass@db/docedit
-      NODE_ID: "S1"   # sẽ gán cho mỗi node khác nhau sau
-      OTHER_NODES: "S2,S3"  # danh sách node khác trong hệ thống (cần cho vector clock)
+      NODE_ID: "S1"
+      OTHER_NODES: "S2,S3"
     volumes:
       - ./app:/app
       - ./tests:/app/tests

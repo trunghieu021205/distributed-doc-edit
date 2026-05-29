@@ -1,20 +1,43 @@
 # app/main.py
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import HTMLResponse
+from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
-import json
 
-from database import get_db
+# Import cho database
+from database import get_db, engine, Base
+
 import crud, schemas
 from vector_clock import VectorClock
+
+import time
+from sqlalchemy import text
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Retry connect to DB
+    max_retries = 10
+    for attempt in range(max_retries):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("✅ Database tables created successfully")
+            break
+        except Exception as e:
+            if attempt == max_retries - 1:
+                print(f"❌ Failed to connect to database after {max_retries} attempts")
+                raise
+            print(f"⏳ Waiting for database... ({attempt + 1}/{max_retries})")
+            time.sleep(2)
+
+    yield
 
 app = FastAPI(
     title="Document Fragment Sync API",
     description="Distributed document update tracking system using Vector Clocks for conflict detection.",
     version="1.0.0",
+    lifespan=lifespan,
 )
-
 # ---------------------------- Utility function ----------------------------
 
 def analyze_fragments(fragments: List[Any]) -> Dict[str, Any]:
