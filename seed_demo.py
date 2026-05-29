@@ -8,25 +8,25 @@ doc_id = "demo_doc"
 fragments = [
     {
         "doc_id": doc_id,
-        "content": "Dòng đầu tiên – phiên bản gốc",
+        "content": "First line – original version",
         "node_id": "S1",
         "vector_clock": {"clock": {"S1": 1}}
     },
     {
         "doc_id": doc_id,
-        "content": "Dòng đầu tiên – S1 sửa",
+        "content": "First line – S1 edit",
         "node_id": "S1",
         "vector_clock": {"clock": {"S1": 2}}
     },
     {
         "doc_id": doc_id,
-        "content": "Dòng đầu tiên – S2 sửa (không biết S1)",
+        "content": "First line – S2 edit (unaware of S1)",
         "node_id": "S2",
         "vector_clock": {"clock": {"S1": 1, "S2": 1}}
     },
     {
         "doc_id": doc_id,
-        "content": "Dòng đầu tiên – S3 sửa sau khi biết S1",
+        "content": "First line – S3 edit after knowing S1",
         "node_id": "S3",
         "vector_clock": {"clock": {"S1": 2, "S3": 1}}
     }
@@ -46,11 +46,11 @@ def main():
     for i, frag in enumerate(fragments, 1):
         result, code = post_fragment(frag)
         if code == 201:
-            print(f"✔ Đã tạo fragment {i}: id={result['id']} clock={result['vector_clock']}")
+            print(f"✔ Created fragment {i}: id={result['id']} clock={result['vector_clock']}")
         else:
-            print(f"✘ Lỗi khi tạo fragment {i} (code {code}): {result}")
+            print(f"✘ Error creating fragment {i} (code {code}): {result}")
 
-    print(f"\n✅ Seed hoàn tất. Truy cập http://127.0.0.1:8000/docs để kiểm tra, hoặc http://127.0.0.1:8000/demo/{doc_id} để xem giao diện demo.")
+    print(f"\n✅ Seed complete. Visit http://127.0.0.1:8000/docs to check, or http://127.0.0.1:8000/demo/{doc_id} to view demo interface.")
 
 if __name__ == "__main__":
     main()

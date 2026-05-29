@@ -56,18 +56,18 @@ class FragmentResponse(BaseModel):
     model_config = {"from_attributes": True}
     
 class CompareRequest(BaseModel):
-    """So sánh quan hệ nhân quả giữa hai vector clock."""
+    """Compare causal relationship between two vector clocks."""
     clock_a: Dict[str, int]
     clock_b: Dict[str, int]
  
  
 class CompareResponse(BaseModel):
     """
-    relation có 4 giá trị:
-    - 'a_before_b'  : A xảy ra trước B (causal)
-    - 'b_before_a'  : B xảy ra trước A (causal)
-    - 'concurrent'  : A và B song song, không biết nhau → conflict branch
-    - 'equal'       : A và B giống hệt nhau
+    relation has 4 values:
+    - 'a_before_b'  : A happens before B (causal)
+    - 'b_before_a'  : B happens before A (causal)
+    - 'concurrent'  : A and B are parallel, unaware of each other -> conflict branch
+    - 'equal'       : A and B are identical
     """
     clock_a: Dict[str, int]
     clock_b: Dict[str, int]
@@ -85,7 +85,7 @@ class ConflictPair(BaseModel):
  
  
 class DocumentAnalysis(BaseModel):
-    """Báo cáo phân tích toàn bộ fragment của một document."""
+    """Analysis report for all fragments of a document."""
     doc_id: str
     total_fragments: int
     concurrent_pairs: List[ConflictPair]
